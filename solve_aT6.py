@@ -1,106 +1,60 @@
-import json
 import numpy as np
-import sys
-from scipy.spatial.transform import Rotation as R
+from solve_aT3_6p_json_refactor import solve_aT3_6p  # Import the solve_aT3_6p function
+
 
 def quaternion_to_rotation_matrix(q):
-    # Normalize quaternion and convert to rotation matrix
-    r = R.from_quat([q[0], q[1], q[2], q[3]])  # default scalar-last order – (x, y, z, w)
+    """Convert quaternion to rotation matrix."""
+    from scipy.spatial.transform import Rotation as R
+    r = R.from_quat([q[0], q[1], q[2], q[3]])  # scalar-last order (x, y, z, w)
     return r.as_matrix()
 
 
-def solve_aT3_6p(tracker_points, link_transforms):
+def calculate_link6_transform(json_data):
+    """
+    Solve for aT6 using aT3 results from solve_aT3_6p and link transforms.
+    """
+    # Extract necessary data from JSON
+    tracker_points = json_data["tracker_points"]
+    link_transforms = json_data["link_transforms"]
 
-    def parse_json_data(points, transforms, group):
-        marker_points = []
-        Link3TEnds = []
-        for p in group:
-            marker_point = next(item for item in points if item["name"] == p)
-            link_transform = next(item for item in transforms if item["name"] == p)
+    # Solve for aT3 using solve_aT3_6p
+    aT3_results = solve_aT3_6p(tracker_points, link_transforms)
 
-            marker_points.append([marker_point["X"], marker_point["Y"], marker_point["Z"]])
-            translation = link_transform["Translation"]
-            rotation = link_transform["Rotation"]
-            r = quaternion_to_rotation_matrix(rotation)
-            t = np.array(translation).reshape(3, 1)
-            Link3TEnds.append(np.hstack((r, t)))
+    # Compute aT6 for each group
+    aT6_results = []
+    for idx, (aT3, _) in enumerate(aT3_results):
+        group_name = f"P{idx * 5 + 1}"  # Starting point for each group (P1, P6, P11, etc.)
+        link_transform = next(item for item in link_transforms if item["name"] == group_name)
 
-        return marker_points, Link3TEnds
+        # Extract rotation and translation for 3T6
+        r = quaternion_to_rotation_matrix(link_transform["Rotation"])
+        t = np.array(link_transform["Translation"]).reshape(3, 1)
 
-    def solve_transformation(marker_points, Link3TEnds):
-        n = len(marker_points)
-        assert n >= 5
+        # Construct 3T6 matrix
+        link3ToLink6 = np.vstack((np.hstack((r, t)), [0, 0, 0, 1]))
 
-        A = np.zeros((3*n, 15))
-        b = np.zeros((3*n, 1))
+        # Calculate aT6 = aT3 * 3T6
+        aT6 = np.dot(aT3, link3ToLink6)
+        aT6_results.append(aT6)
 
-        for i in range(n):
-            marker_point = marker_points[i]
-            Link3TEnd_i = Link3TEnds[i]
+    return aT6_results
 
-            b[3*i, 0] = -Link3TEnd_i[0][3]
-            b[3*i+1, 0] = -Link3TEnd_i[1][3]
-            b[3*i+2, 0] = -Link3TEnd_i[2][3]
 
-            A[3*i][:3] = [ Link3TEnd_i[0][0], Link3TEnd_i[0][1], Link3TEnd_i[0][2] ]
-            A[3*i][3:6] = [ -marker_point[0], -marker_point[1], -marker_point[2]]
-            A[3*i][6] = -1 
+if __name__ == "__main__":
+    import json
+    import sys
 
-            A[3*i + 1][:3] = [ Link3TEnd_i[1][0], Link3TEnd_i[1][1], Link3TEnd_i[1][2] ]
-            A[3*i + 1][7:10] = [ -marker_point[0], -marker_point[1], -marker_point[2]]
-            A[3*i + 1][10] = -1 
-
-            A[3*i + 2][:3] =  [ Link3TEnd_i[2][0], Link3TEnd_i[2][1], Link3TEnd_i[2][2] ]
-            A[3*i + 2][11:14] = [ -marker_point[0], -marker_point[1], -marker_point[2]]
-            A[3*i + 2][14] = -1
-
-        x = np.linalg.lstsq(A, b, rcond=None)[0]
-
-        est_3Ta = np.array([x[3:7, 0],
-                            x[7:11, 0],
-                            x[11:, 0],
-                            [0, 0, 0, 1]])
-        
-        est_6p = np.array([x[:3, 0]])
-
-        return np.linalg.inv(est_3Ta), est_6p
-
-    groups = [["P1", "P2", "P3", "P4", "P5"], ["P6", "P7", "P8", "P9", "P10"], ["P11", "P12", "P13", "P14", "P15"]]
-    results = []
-    for group in groups:
-        marker_points, Link3TEnds = parse_json_data(tracker_points, link_transforms, group)
-        est_aT3, est_6p = solve_transformation(marker_points, Link3TEnds)
-        results.append((est_aT3, est_6p))
-
-    return results
-
-def calculate_link6_transform(est_aT3, est_6p, link_transform):
-    r = quaternion_to_rotation_matrix(link_transform["Rotation"])
-    t = np.array(link_transform["Translation"]).reshape(3, 1)
-    link3ToLink6 = np.vstack((np.hstack((r, t)), [0, 0, 0, 1]))
-
-    trackerToLink6 = est_aT3 @ link3ToLink6
-    return trackerToLink6
-
-def main(json_file):
-    with open(json_file, 'r') as file:
-        data = json.load(file)
-    
-    tracker_points = data['tracker_points']
-    link_transforms = data['link_transforms']
-
-    results = solve_aT3_6p(tracker_points, link_transforms)
-
-    for idx, (est_aT3, est_6p) in enumerate(results):
-        print(f"Group {idx+1}: est_aT3 =\n{est_aT3}\n est_6p =\n{est_6p}\n")
-        link_transform = next(item for item in link_transforms if item["name"] == f"P{1 + idx * 5}")
-        link6_transform = calculate_link6_transform(est_aT3, est_6p, link_transform)
-        print(f"Link6 Transform for Group {idx+1}:\n{link6_transform}\n")
-
-if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python solve_aT3_6p.py <json_file>")
+        print("Usage: python solve_aT6.py <json_file>")
         sys.exit(1)
 
     json_file = sys.argv[1]
-    main(json_file)
+    with open(json_file, "r") as file:
+        data = json.load(file)
+
+    # Calculate aT6 for all groups
+    aT6_results = calculate_link6_transform(data)
+
+    # Print the results
+    for idx, aT6 in enumerate(aT6_results):
+        print(f"Group {idx + 1}: aT6 =\n{aT6}\n")
