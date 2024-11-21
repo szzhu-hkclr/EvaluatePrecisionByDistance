@@ -8,6 +8,7 @@ def quaternion_to_rotation_matrix(q):
     r = R.from_quat([q[0], q[1], q[2], q[3]])  # default scalar-last order – (x, y, z, w)
     return r.as_matrix()
 
+
 def solve_aT3_6p(tracker_points, link_transforms):
 
     def parse_json_data(points, transforms, group):
@@ -20,7 +21,6 @@ def solve_aT3_6p(tracker_points, link_transforms):
             marker_points.append([marker_point["X"], marker_point["Y"], marker_point["Z"]])
             translation = link_transform["Translation"]
             rotation = link_transform["Rotation"]
-            # Convert quaternion to rotation matrix
             r = quaternion_to_rotation_matrix(rotation)
             t = np.array(translation).reshape(3, 1)
             Link3TEnds.append(np.hstack((r, t)))
@@ -35,7 +35,7 @@ def solve_aT3_6p(tracker_points, link_transforms):
         b = np.zeros((3*n, 1))
 
         for i in range(n):
-            marker_point = [x/1000.0 for x in marker_points[i]]
+            marker_point = marker_points[i]
             Link3TEnd_i = Link3TEnds[i]
 
             b[3*i, 0] = -Link3TEnd_i[0][3]
@@ -65,7 +65,6 @@ def solve_aT3_6p(tracker_points, link_transforms):
 
         return np.linalg.inv(est_3Ta), est_6p
 
-    # Solve for each group
     groups = [["P1", "P2", "P3", "P4", "P5"], ["P6", "P7", "P8", "P9", "P10"], ["P11", "P12", "P13", "P14", "P15"]]
     results = []
     for group in groups:
@@ -74,6 +73,14 @@ def solve_aT3_6p(tracker_points, link_transforms):
         results.append((est_aT3, est_6p))
 
     return results
+
+def calculate_link6_transform(est_aT3, est_6p, link_transform):
+    r = quaternion_to_rotation_matrix(link_transform["Rotation"])
+    t = np.array(link_transform["Translation"]).reshape(3, 1)
+    link3ToLink6 = np.vstack((np.hstack((r, t)), [0, 0, 0, 1]))
+
+    trackerToLink6 = est_aT3 @ link3ToLink6
+    return trackerToLink6
 
 def main(json_file):
     with open(json_file, 'r') as file:
@@ -86,10 +93,13 @@ def main(json_file):
 
     for idx, (est_aT3, est_6p) in enumerate(results):
         print(f"Group {idx+1}: est_aT3 =\n{est_aT3}\n est_6p =\n{est_6p}\n")
+        link_transform = next(item for item in link_transforms if item["name"] == f"P{1 + idx * 5}")
+        link6_transform = calculate_link6_transform(est_aT3, est_6p, link_transform)
+        print(f"Link6 Transform for Group {idx+1}:\n{link6_transform}\n")
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python solve_aT3_6p_json_refactor.py <json_file>")
+        print("Usage: python solve_aT3_6p.py <json_file>")
         sys.exit(1)
 
     json_file = sys.argv[1]
