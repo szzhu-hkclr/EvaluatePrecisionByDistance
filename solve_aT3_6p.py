@@ -18,7 +18,7 @@ def solve_aT3_6p(Link3TEnds, marker_points):
     b = np.zeros((3*n, 1))
 
     for i in range(n):
-        marker_point = [x/1000.0 for x in marker_points[i]]
+        marker_point = [x for x in marker_points[i]]
         
         Link3TEnd_i = Link3TEnds[i]
 
