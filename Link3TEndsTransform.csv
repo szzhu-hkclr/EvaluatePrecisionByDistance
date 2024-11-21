@@ -1,0 +1,59 @@
+P1
+foreArm_Link _To_wrist3_Link Translation: [0.730, 0.051, 0.003]
+Rotation: in Quaternion [0.620, 0.317, 0.534, -0.480]
+
+P2
+foreArm_Link _To_wrist3_Link Translation: [0.738, 0.014, -0.015]
+Rotation: in Quaternion [0.744, 0.157, 0.485, -0.433]
+
+P3
+foreArm_Link _To_wrist3_Link Translation: [0.724, 0.063, 0.015]
+Rotation: in Quaternion [-0.565, -0.313, -0.530, 0.549]
+
+P4
+foreArm_Link _To_wrist3_Link Translation: [0.717, 0.063, -0.042]
+Rotation: in Quaternion [0.667, 0.530, 0.398, -0.340]
+
+P5
+foreArm_Link _To_wrist3_Link Translation: [0.708, 0.052, -0.071]
+Rotation: in Quaternion [0.840, 0.414, 0.183, -0.299]
+
+P6
+foreArm_Link _To_wrist3_Link Translation: [0.703, 0.094, 0.002]
+Rotation: in Quaternion [0.337, 0.611, 0.628, -0.345]
+
+P7
+foreArm_Link _To_wrist3_Link Translation: [0.720, 0.046, -0.054]
+Rotation: in Quaternion [0.427, 0.778, 0.448, -0.104]
+
+P8
+foreArm_Link _To_wrist3_Link Translation: [0.717, 0.068, -0.036]
+Rotation: in Quaternion [0.266, 0.789, 0.548, -0.083]
+
+P9
+foreArm_Link _To_wrist3_Link Translation: [0.709, 0.085, 0.020]
+Rotation: in Quaternion [0.304, 0.547, 0.704, -0.336]
+
+P10
+foreArm_Link _To_wrist3_Link Translation: [0.696, 0.094, 0.039]
+Rotation: in Quaternion [0.227, 0.490, 0.732, -0.415]
+
+P11
+foreArm_Link _To_wrist3_Link Translation: [0.738, 0.018, 0.001]
+Rotation: in Quaternion [-0.693, 0.122, -0.300, 0.644]
+
+P12
+foreArm_Link _To_wrist3_Link Translation: [0.685, 0.110, 0.011]
+Rotation: in Quaternion [-0.652, -0.125, -0.013, 0.747]
+
+P13
+foreArm_Link _To_wrist3_Link Translation: [0.702, 0.094, -0.010]
+Rotation: in Quaternion [-0.744, 0.002, 0.007, 0.668]
+
+P14
+foreArm_Link _To_wrist3_Link Translation: [0.736, 0.016, -0.027]
+Rotation: in Quaternion [-0.755, 0.277, -0.148, 0.576]
+
+P15
+foreArm_Link _To_wrist3_Link Translation: [0.736, 0.016, -0.027]
+Rotation: in Quaternion [-0.755, 0.277, -0.148, 0.576]
