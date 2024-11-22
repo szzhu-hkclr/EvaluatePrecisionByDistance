@@ -73,10 +73,14 @@ def main(data_file, aT3_json_file):
     d3 = calculate_distance(sensor_poses["P1"], sensor_poses["P11"])
 
     # Print results
+    method_label_2="Method 2 (calib_link3+last3_kinematics)"
+    method_label_3="Method 3 (aubo_kinematics)"
+    method_label_4="Method 4 (handeye)"
+    
     print(f"Ground Truth (Method 1): a1={a1}, a2={a2}, a3={a3}")
-    print(f"Method 2 (aT6): b1={b1}, b2={b2}, b3={b3}")
-    print(f"Method 3 (wrist3_Link): c1={c1}, c2={c2}, c3={c3}")
-    print(f"Method 4 (sensor): d1={d1}, d2={d2}, d3={d3}")
+    print(method_label_2 + f": b1={b1}, b2={b2}, b3={b3}")
+    print(method_label_3 + f": c1={c1}, c2={c2}, c3={c3}")
+    print(method_label_4 + f": d1={d1}, d2={d2}, d3={d3}")
 
     # Error Calculations
     errors_method2 = [abs(a1 - b1), abs(a2 - b2), abs(a3 - b3)]
@@ -90,12 +94,12 @@ def main(data_file, aT3_json_file):
 
     # Print Mean Errors
     print("\nMean Errors:")
-    print(f"Method 2 (aT6): {mean_error_method2}")
-    print(f"Method 3 (wrist3_Link): {mean_error_method3}")
-    print(f"Method 4 (sensor): {mean_error_method4}")
+    print(method_label_2 + f": {mean_error_method2}")
+    print(method_label_3 + f": {mean_error_method3}")
+    print(method_label_4 + f": {mean_error_method4}")
 
     # Create Table of Mean Errors
-    methods = ["Method 2 (aT6)", "Method 3 (wrist3_Link)", "Method 4 (sensor)"]
+    methods = [method_label_2, method_label_3, method_label_4]
     mean_errors = [mean_error_method2, mean_error_method3, mean_error_method4]
 
     print("\nSummary Table:")
@@ -109,9 +113,9 @@ def main(data_file, aT3_json_file):
     width = 0.25
 
     fig, ax = plt.subplots()
-    ax.bar(x - width, errors_method2, width, label="Method 2 (aT6)")
-    ax.bar(x, errors_method3, width, label="Method 3 (wrist3_Link)")
-    ax.bar(x + width, errors_method4, width, label="Method 4 (sensor)")
+    ax.bar(x - width, errors_method2, width, label=method_label_2)
+    ax.bar(x, errors_method3, width, label=method_label_3)
+    ax.bar(x + width, errors_method4, width, label=method_label_4)
 
     # Add labels, title, legend
     ax.set_xlabel("Distances")
