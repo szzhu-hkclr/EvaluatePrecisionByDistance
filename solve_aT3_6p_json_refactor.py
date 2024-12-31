@@ -17,7 +17,7 @@ def solve_aT3_6p(tracker_points, link_transforms):
             marker_point = next(item for item in points if item["name"] == p)
             link_transform = next(item for item in transforms if item["name"] == p)
 
-            marker_points.append([marker_point["X"], marker_point["Y"], marker_point["Z"]])
+            marker_points.append(marker_point["pose"])
             translation = link_transform["Translation"]
             rotation = link_transform["Rotation"]
             # Convert quaternion to rotation matrix

@@ -39,7 +39,7 @@ def main(data_file, aT3_json_file):
     with open(data_file, 'r') as file:
         data = json.load(file)
 
-    tracker_points = {p["name"]: [p["X"], p["Y"], p["Z"]] for p in data["tracker_points"]}
+    tracker_points = {p["name"]: p["pose"][:3] for p in data["tracker_points"]}
     link_transforms = {t["name"]: t for t in data["link_transforms"]}
     wrist3_Link_poses = {p["name"]: p["pose"][:3] for p in data["wrist3_Link_poses"]}
     sensor_poses = {p["name"]: p["pose"][:3] for p in data["sensor_poses"]}
