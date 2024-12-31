@@ -101,4 +101,4 @@ def main(data_file):
 
 
 if __name__ == '__main__':        
-    main("data_16w.json")
+    main("data_dist_16w.json")
